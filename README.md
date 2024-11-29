@@ -10,7 +10,7 @@
 
 # Default behavior:
 - `RIGHT SHIFT` pauses chat.
-- Pausing allows scrolling with `LEFT SHIFT` and `MOUSEWHEEL`.
+- Pausing allows scrolling with `LEFT SHIFT`+`MOUSEWHEEL`.
 - Press `RIGHT SHIFT` again to return to autoscroll.
 
 
