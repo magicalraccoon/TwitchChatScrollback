@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
 import socket
 import threading
-from pynput import keyboard
+from pynput import keyboard, mouse
 
 # Twitch IRC Connection Details
 SERVER = "irc.chat.twitch.tv"
