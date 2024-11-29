@@ -71,31 +71,42 @@ def update_chat_display(chat_display, user, message, message_count, colors, auto
     chat_display.config(state=tk.DISABLED)
 
 
-def start_global_input_listener(auto_scroll_flag):
-    """Start global input listeners for keyboard hotkeys."""
+def start_global_input_listener(chat_display, auto_scroll_flag):
+    """Start global input listeners for mouse and keyboard hotkeys."""
+    is_shift_pressed = [False]  # Track the Shift key state
+
     def on_key_press(key):
-        """Handle key press events."""
+        """Handle global key press events."""
         try:
             if key == keyboard.Key.shift_r:  # Right Shift toggles auto-scroll
                 auto_scroll_flag[0] = not auto_scroll_flag[0]
                 print(
                     "Auto-scroll enabled." if auto_scroll_flag[0] else "Auto-scroll paused."
                 )
+            elif key == keyboard.Key.shift:  # Track Shift state for scrolling
+                is_shift_pressed[0] = True
         except Exception as e:
             print(f"Key Error: {e}")
 
-    # Keyboard Listener
-    key_listener = keyboard.Listener(on_press=on_key_press)
+    def on_key_release(key):
+        """Handle global key release events."""
+        if key == keyboard.Key.shift:
+            is_shift_pressed[0] = False
+
+    def on_scroll(x, y, dx, dy):
+        """Handle global mouse scroll events."""
+        if not auto_scroll_flag[0] and is_shift_pressed[0]:
+            if dy > 0:  # Scroll up
+                chat_display.yview_scroll(-1, "units")
+            elif dy < 0:  # Scroll down
+                chat_display.yview_scroll(1, "units")
+
+    # Start listeners for keyboard and mouse
+    key_listener = keyboard.Listener(on_press=on_key_press, on_release=on_key_release)
+    mouse_listener = mouse.Listener(on_scroll=on_scroll)
+
     key_listener.start()
-
-
-def on_mouse_wheel(event, chat_display, auto_scroll_flag):
-    """Handle mouse wheel scrolling with Shift key."""
-    if not auto_scroll_flag[0] and event.state == 0x0001:  # Check if Shift key is held
-        if event.delta > 0:  # Scroll up
-            chat_display.yview_scroll(-1, "units")
-        elif event.delta < 0:  # Scroll down
-            chat_display.yview_scroll(1, "units")
+    mouse_listener.start()
 
 
 def start_chat_window():
@@ -128,11 +139,7 @@ def start_chat_window():
         threading.Thread(target=listen_to_chat, args=(irc, chat_display, auto_scroll_flag), daemon=True).start()
 
         # Start global input listeners
-        start_global_input_listener(auto_scroll_flag)
-
-        # Bind mouse wheel event for manual scrolling while holding Shift key
-        chat_display.bind("<Button-4>", lambda event: on_mouse_wheel(event, chat_display, auto_scroll_flag))
-        chat_display.bind("<Button-5>", lambda event: on_mouse_wheel(event, chat_display, auto_scroll_flag))
+        start_global_input_listener(chat_display, auto_scroll_flag)
 
         # Run the Tkinter event loop
         root.mainloop()
