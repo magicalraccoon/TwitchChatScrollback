@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import messagebox
 from tkinter.scrolledtext import ScrolledText
 import socket
 import threading
