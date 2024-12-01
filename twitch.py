@@ -3,13 +3,41 @@ from tkinter.scrolledtext import ScrolledText
 import socket
 import threading
 from pynput import keyboard, mouse
+from dotenv import load_dotenv
+import os
+
+
+# Ensure the .env file exists and create it if missing
+def ensure_env_file():
+    """Check for .env file and create it if it doesn't exist."""
+    if not os.path.exists('.env'):
+        with open('.env', 'w') as env_file:
+            env_file.write("TWITCH_OAUTH_TOKEN=oauth:your_twitch_oauth_token\n")
+            env_file.write("TWITCH_USERNAME=your_twitch_username\n")
+            env_file.write("CHANNEL=channel to observe")
+        print(".env file created. Please edit it with your Twitch credentials.")
+        return False
+    return True
+
+
+# Load environment variables
+if ensure_env_file():
+    load_dotenv()
+else:
+    messagebox.showerror("Error", ".env file created. Edit it and restart the program.")
+    exit()
 
 # Twitch IRC Connection Details
 SERVER = "irc.chat.twitch.tv"
 PORT = 6667
-OAUTH_TOKEN = "oauth:Your_OAUTH_here"  # Replace with your token, include "oauth:"
-USERNAME = "username"  # Replace with your Twitch username
-CHANNEL = "channel"  # Replace with the channel name (no '#')
+OAUTH_TOKEN = os.getenv("TWITCH_OAUTH_TOKEN")  # Replace with your token in the .env file. Include oauth: prefix
+USERNAME = os.getenv("TWITCH_USERNAME")  # Replace with your Twitch username in the .env file
+CHANNEL = os.getenv("CHANNEL")
+
+if not OAUTH_TOKEN or not USERNAME:
+    messagebox.showerror("Error", "Missing credentials in the .env file. Please add your Twitch OAuth Token, "
+                                  "Username, and Channel to observe.")
+    exit()
 
 
 def connect_to_twitch():
